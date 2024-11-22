@@ -1,65 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Accéléromètre et Sons</title>
+  <title>CS footsteps</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    button {
+      height: 2rem;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Accéléromètre et Sons Aléatoires</h1>
-  <p>Appuyez sur "Start" pour activer la détection de mouvement.</p>
-  
-  <button id="startButton">Start</button>
-  <button id="simulateButton">Simuler un mouvement</button>
-  
-  <p id="status">En attente de démarrage...</p>
-  
-  <label for="sensitivity">Sensibilité : <span id="sensitivityValue">6</span></label>
-  <input type="range" id="sensitivity" min="0" max="15" value="6">
+  <button id="startButton">Go Go Go !</button>
+  <span>
+    <label for="sensitivity">Motion sensitivity : <span id="sensitivityValue">6</span></label>
+    <input type="range" id="sensitivity" min="0" max="15" value="6">
+  </span>
 
   <script>
-    // Tableau des fichiers audio
     const sounds = ["pl_step1.wav", "pl_step2.wav", "pl_step3.wav", "pl_step4.wav"];
     let isListening = false;
     let currentAudio = null;
-    let sensitivity = 6; // Sensibilité par défaut
-    let lastIndex = -1; // Indice du dernier son joué
+    let sensitivity = 6; // Default sensitivity
+    let lastSoundIndex = -1; // Last played sound index
 
-    // Fonction pour jouer un son aléatoire avec des restrictions
     function playRandomSound() {
-      // Si un son est déjà en cours de lecture, on ne fait rien
+
+      // Ignore if previous audio still playing
       if (currentAudio && !currentAudio.ended) {
-        console.log("Un son est déjà en cours, nouveau son ignoré.");
         return;
       }
 
-      let randomIndex = Math.floor(Math.random() * sounds.length);
-
-      // Si le randomIndex est identique au dernier, on passe à l'index suivant
-      if (randomIndex === lastIndex) {
-        randomIndex = (randomIndex + 1) % sounds.length;
+      // Choose random sound, choose next if same as previous one
+      let soundIndex = Math.floor(Math.random() * sounds.length);
+      if (soundIndex === lastSoundIndex) {
+        soundIndex = (soundIndex + 1) % sounds.length;
       }
+      lastSoundIndex = soundIndex;
 
-      // Met à jour l'indice du dernier son joué
-      lastIndex = randomIndex;
-
-      // Jouer le nouveau son
-      currentAudio = new Audio(sounds[randomIndex]);
+      // Play sound
+      currentAudio = new Audio(sounds[soundIndex]);
       currentAudio.play();
-      console.log(`Lecture de ${sounds[randomIndex]}`);
     }
 
-    // Gestion du bouton Start
+    // Start button
     document.getElementById("startButton").addEventListener("click", () => {
       if (window.DeviceMotionEvent) {
         isListening = true;
-        document.getElementById("status").innerText = "Détecteur de mouvement activé. Secouez votre appareil !";
-      } else {
-        document.getElementById("status").innerText = "Votre appareil ne supporte pas l'API de l'accéléromètre.";
       }
+      playRandomSound();
     });
 
-    // Gestion du slider de sensibilité
+    // Sensitivity slider
     const sensitivitySlider = document.getElementById("sensitivity");
     const sensitivityValueDisplay = document.getElementById("sensitivityValue");
 
@@ -68,19 +71,10 @@
       sensitivityValueDisplay.textContent = sensitivity;
     });
 
-    // Gestion du bouton Simuler un mouvement
-    document.getElementById("simulateButton").addEventListener("click", () => {
-      if (isListening) {
-        playRandomSound();
-      } else {
-        alert("Veuillez d'abord appuyer sur 'Start' pour activer la simulation.");
-      }
-    });
-
-    // Détection des mouvements
+    // Motion sensing
     if (window.DeviceMotionEvent) {
       let lastAcceleration = { x: null, y: null, z: null };
-      
+
       window.addEventListener("devicemotion", (event) => {
         if (!isListening) return;
 
@@ -96,14 +90,14 @@
           }
         }
 
-        // Mise à jour des valeurs d'accélération
-        lastAcceleration = { 
-          x: acceleration.x, 
-          y: acceleration.y, 
-          z: acceleration.z 
+        lastAcceleration = {
+          x: acceleration.x,
+          y: acceleration.y,
+          z: acceleration.z
         };
       });
     }
   </script>
 </body>
+
 </html>
