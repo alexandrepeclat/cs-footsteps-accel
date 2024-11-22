@@ -8,20 +8,33 @@
 <body>
   <h1>Accéléromètre et Sons Aléatoires</h1>
   <p>Appuyez sur "Start" pour activer la détection de mouvement.</p>
+  
   <button id="startButton">Start</button>
+  
   <p id="status">En attente de démarrage...</p>
+  
+  <label for="sensitivity">Sensibilité : <span id="sensitivityValue">6</span></label>
+  <input type="range" id="sensitivity" min="0" max="15" value="6">
 
   <script>
     // Tableau des fichiers audio
     const sounds = ["pl_step1.wav", "pl_step2.wav", "pl_step3.wav", "pl_step4.wav"];
-
     let isListening = false;
+    let currentAudio = null;
+    let sensitivity = 6; // Sensibilité par défaut
 
     // Fonction pour jouer un son aléatoire
     function playRandomSound() {
+      // Arrêter le son précédent s'il est en cours
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      // Jouer un nouveau son
       const randomIndex = Math.floor(Math.random() * sounds.length);
-      const audio = new Audio(sounds[randomIndex]);
-      audio.play();
+      currentAudio = new Audio(sounds[randomIndex]);
+      currentAudio.play();
     }
 
     // Gestion du bouton Start
@@ -34,10 +47,18 @@
       }
     });
 
+    // Gestion du slider de sensibilité
+    const sensitivitySlider = document.getElementById("sensitivity");
+    const sensitivityValueDisplay = document.getElementById("sensitivityValue");
+
+    sensitivitySlider.addEventListener("input", (event) => {
+      sensitivity = parseInt(event.target.value, 10);
+      sensitivityValueDisplay.textContent = sensitivity;
+    });
+
     // Détection des mouvements
     if (window.DeviceMotionEvent) {
       let lastAcceleration = { x: null, y: null, z: null };
-      const threshold = 15; // Seuil pour déclencher un son
       
       window.addEventListener("devicemotion", (event) => {
         if (!isListening) return;
@@ -49,7 +70,7 @@
           const deltaY = Math.abs(acceleration.y - lastAcceleration.y);
           const deltaZ = Math.abs(acceleration.z - lastAcceleration.z);
 
-          if (deltaX > threshold || deltaY > threshold || deltaZ > threshold) {
+          if (deltaX > sensitivity || deltaY > sensitivity || deltaZ > sensitivity) {
             playRandomSound();
           }
         }
