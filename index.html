@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accéléromètre et Sons</title>
+</head>
+<body>
+  <h1>Accéléromètre et Sons Aléatoires</h1>
+  <p>Secouez votre appareil pour jouer un son aléatoire !</p>
+  <p id="status">En attente de mouvement...</p>
+
+  <script>
+    // Tableau des fichiers audio
+    const sounds = ["pl_step1.wav", "pl_step2.wav", "pl_step3.wav", "pl_step4.wav"];
+
+    // Fonction pour jouer un son aléatoire
+    function playRandomSound() {
+      const randomIndex = Math.floor(Math.random() * sounds.length);
+      const audio = new Audio(sounds[randomIndex]);
+      audio.play();
+    }
+
+    // Vérification de la compatibilité avec l'API de l'accéléromètre
+    if (window.DeviceMotionEvent) {
+      document.getElementById('status').innerText = "Détecteur de mouvement activé.";
+      
+      let lastAcceleration = { x: null, y: null, z: null };
+      const threshold = 15; // Seuil pour déclencher un son
+      
+      window.addEventListener("devicemotion", (event) => {
+        const acceleration = event.accelerationIncludingGravity;
+
+        if (lastAcceleration.x !== null && lastAcceleration.y !== null && lastAcceleration.z !== null) {
+          const deltaX = Math.abs(acceleration.x - lastAcceleration.x);
+          const deltaY = Math.abs(acceleration.y - lastAcceleration.y);
+          const deltaZ = Math.abs(acceleration.z - lastAcceleration.z);
+
+          if (deltaX > threshold || deltaY > threshold || deltaZ > threshold) {
+            playRandomSound();
+          }
+        }
+
+        // Mise à jour des valeurs d'accélération
+        lastAcceleration = { 
+          x: acceleration.x, 
+          y: acceleration.y, 
+          z: acceleration.z 
+        };
+      });
+    } else {
+      document.getElementById('status').innerText = "Votre appareil ne supporte pas l'API de l'accéléromètre.";
+    }
+  </script>
+</body>
+</html>
